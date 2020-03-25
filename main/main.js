@@ -1,6 +1,8 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, Menu, MenuItem, dialog, shell, nativeImage } = require('electron')
+const ffi = require('ffi-napi')
 
-function createWindow () {   
+
+function createWindow() {
   // 创建浏览器窗口
   const win = new BrowserWindow({
     width: 800,
@@ -11,7 +13,54 @@ function createWindow () {
   })
 
   // 并且为你的应用加载index.html
-  win.loadFile('html/index.html')
+  win.loadFile('../html/index.html')
+
+  // 修改默认顶层菜单的响应
+  let am = Menu.getApplicationMenu()
+  if (am) {
+    let hm = am.items[4] // Help
+    if (hm) {
+      let shm = hm.submenu.items[0] // 'Learn More'
+      if (shm) {
+        shm.click = () => {
+          dialog.showMessageBox({
+            type: "info",//图标类型
+            title: "帮助",//信息提示框标题
+            message: "顶层菜单子项响应",//信息提示框内容
+            buttons: ["确认", "取消"],//下方显示的按钮
+            //icon:nativeImage.createFromPath("./icon/search-globe.png"),//图标
+            cancelId: 2//点击x号关闭返回值
+          }).then((mb_ret) => {
+            if (mb_ret.response === 0) {
+              shell.openExternal('https://www.baidu.com/')
+            }
+          })
+        }
+      }
+    }
+  }
+
+  // 页面右键菜单
+  const context_menu = new Menu;
+  context_menu.append(new MenuItem({
+    label: 'Hello',
+    click: (menuItem, browserWindow, event) => {
+      dialog.showOpenDialog(win)
+    }
+  }))
+  context_menu.append(new MenuItem({ type: 'separator' }))
+  context_menu.append(new MenuItem({
+    label: 'Electron',
+    type: 'checkbox',
+    checked: true,
+    click: (menuItem, browserWindow, event) => {
+      dialog.showSaveDialog(win)
+    }
+  }))
+  // 设置右键菜单
+  win.webContents.on('context-menu', (event, params) => {
+    context_menu.popup(win, params.x, params.y)
+  })
 
   // 打开开发者工具
   //win.webContents.openDevTools()
@@ -20,7 +69,11 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // 部分 API 在 ready 事件触发后才能使用。
-app.whenReady().then(createWindow)
+app.whenReady().then({
+  ffi.Library()
+
+  createWindow()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -37,6 +90,12 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
+})
+
+app.on('browser-window-created', (event, window) => {
+  /* window.webContents.on('context-menu', (event, params)=>{
+    g_conteext_menu.popup(window, params.x, params.y)
+  }) */
 })
 
 // In this file you can include the rest of your app's specific main process
