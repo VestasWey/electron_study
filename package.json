@@ -1,0 +1,56 @@
+{
+  "name": "demo",
+  "version": "1.0.1",
+  "description": "elc demo",
+  "main": "main/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "electron_demo"
+  },
+  "author": "wh",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^8.1.1",
+    "yarn": "^1.22.4"
+  },
+  "build": {
+    "productName": "electron_demo.productName",
+    "appId": "electron_demo.appid",
+    "copyright": "electron_demo.copyright",
+    "compression": "store",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "main",      
+      "render",      
+      "html"
+    ],
+    "asar": false,
+    "win": {
+      "icon": "assets/ugc.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/bililive.ico",
+      "uninstallerIcon": "assets/danmaku.ico",
+      "installerHeaderIcon": "assets/app_list.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "electron_demo"
+    }
+  }
+}
