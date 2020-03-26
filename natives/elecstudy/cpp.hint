@@ -1,0 +1,2 @@
+#define ELECSTUDY_API __declspec(dllexport)
+#define ELECSTUDY_API __declspec(dllimport)

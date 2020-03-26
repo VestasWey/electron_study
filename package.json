@@ -13,9 +13,13 @@
   "author": "wh",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^8.1.1",
+    "electron": "^8.2.0",
+    "electron-builder": "^22.4.1",
     "ffi-napi": "^2.4.7",
     "yarn": "^1.22.4"
+  }, 
+  "dependencies": {
+    "ffi-napi": "^2.4.7"
   },
   "build": {
     "productName": "electron_demo.productName",
@@ -30,7 +34,12 @@
       "render",
       "html"
     ],
-    "asar": false,
+    "extraResources": [
+    ],
+    "extraFiles": [
+      "bin"
+    ],
+    "asar": true,
     "win": {
       "icon": "assets/ugc.ico",
       "target": [

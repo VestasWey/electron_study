@@ -11,6 +11,11 @@
 
 5、安装electron环境（--save-dev将electron环境装在项目目录内，防止装在全局影响到其他使用electron的app）
     npm install electron --save-dev --verbose
+    npm install electron --arch=ia32 --save-dev --verbose
+    
+    安装ffi-napi
+    npm install ffi-napi --save-dev --verbose
+    npm install ffi-napi --arch=ia32 --save-dev --verbose    
 
 6、vs code打开项目目录，添加.js文件和.html文件
 
@@ -19,12 +24,20 @@
 
 8、package.json中写好打包相关参数
 
+    scripts: {
+        /** 打包成windows系统 **/
+        "build": "node .electron-vue/build.js && electron-builder --win",
+        /** 打包成macos系统 **/
+        "build:mac": "node .electron-vue/build.js && electron-builder --mac",
+    }
+
 9、全局安装electron-builder用于打包
-    npm install -g electron-builder
-    会装在：C:\Users\xxxx\AppData\Roaming\npm\node_modules
+    //npm install -g electron-builder
+    //会装在：C:\Users\xxxx\AppData\Roaming\npm\node_modules
+    npm install electron-builder --save-dev --verbose
 
 10、打包（package.json里指定nsis为打包器的话electron-builder会自己下载）
-    electron-builder build
+    node_modules\.bin\electron-builder build
     
     打包过程中遇到依赖环境下载不了时直接手动下载，https://github.com/electron/electron/releases，
     然后将下好的文件手动放置到“%localappdata%\electron\Cache”（windows）中，MAC放到“~/Library/Caches/electron”目录下

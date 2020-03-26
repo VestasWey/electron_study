@@ -1,8 +1,13 @@
 const { app, BrowserWindow, Menu, MenuItem, dialog, shell, nativeImage } = require('electron')
 const ffi = require('ffi-napi')
+const path = require('path');
+
+const bin_dir = path.join(process.cwd(), 'bin')
+const cwd_dir = path.dirname(__dirname)
 
 
 function createWindow() {
+
   // 创建浏览器窗口
   const win = new BrowserWindow({
     width: 800,
@@ -13,7 +18,7 @@ function createWindow() {
   })
 
   // 并且为你的应用加载index.html
-  win.loadFile('../html/index.html')
+  win.loadFile(path.join(cwd_dir, 'html/index.html'))
 
   // 修改默认顶层菜单的响应
   let am = Menu.getApplicationMenu()
@@ -43,18 +48,31 @@ function createWindow() {
   // 页面右键菜单
   const context_menu = new Menu;
   context_menu.append(new MenuItem({
-    label: 'Hello',
+    label: 'first',
     click: (menuItem, browserWindow, event) => {
-      dialog.showOpenDialog(win)
+      //dialog.showOpenDialog(win)
+      dialog.showErrorBox('title', 'bin_dir:' + bin_dir + '\ncwd_dir: ' +  cwd_dir)
     }
   }))
   context_menu.append(new MenuItem({ type: 'separator' }))
   context_menu.append(new MenuItem({
-    label: 'Electron',
+    label: 'second',
     type: 'checkbox',
     checked: true,
     click: (menuItem, browserWindow, event) => {
-      dialog.showSaveDialog(win)
+      //dialog.showSaveDialog(win)
+      
+      try {
+        const cpp_lib = new ffi.Library(path.join(bin_dir, 'study_main.dll'),
+          {
+            'fn_add': ['int', ['int', 'int']]
+          });
+    
+        let ret = cpp_lib.fn_add(12312, 423423)
+        dialog.showErrorBox('title', `the result of fn_add is: ` + ret)
+      } catch (error) {
+        dialog.showErrorBox('title', 'ffi.Library err: ' + error)
+      }
     }
   }))
   // 设置右键菜单
@@ -66,14 +84,26 @@ function createWindow() {
   //win.webContents.openDevTools()
 }
 
+function initApp() {
+  try {
+    const cpp_lib = new ffi.Library(path.join(bin_dir, 'study_main.dll'),
+      {
+        'fn_add': ['int', ['int', 'int']]
+      });
+
+    let ret = cpp_lib.fn_add(12312, 423423)
+    console.log(`the result of fn_add is: ` + ret);
+  } catch (error) {
+    console.log(`ffi.Library err: ` + error);
+  }
+
+  createWindow()
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // 部分 API 在 ready 事件触发后才能使用。
-app.whenReady().then({
-  ffi.Library()
-
-  createWindow()
-})
+app.whenReady().then(initApp)
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -100,3 +130,6 @@ app.on('browser-window-created', (event, window) => {
 
 // In this file you can include the rest of your app's specific main process
 // code. 也可以拆分成几个文件，然后用 require 导入。
+process.on('exit', () => {
+  ///////////////////////////////////
+})

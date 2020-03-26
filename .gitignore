@@ -1,2 +1,23 @@
 
+*.sdf
+*.opensdf
+*.suo
+*.user
+*.aps
+*.VC.db
+*.opendb
+*.obj
+*.tlog
+*.lastbuildstate
+
+.vs/
+
+# Build results
+
+[Dd]ebug/
+[Rr]elease/
+
+node_modules/node-addon-api/src/Release/
+
 build/
+bin/
