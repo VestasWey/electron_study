@@ -42,3 +42,7 @@
     打包过程中遇到依赖环境下载不了时直接手动下载，https://github.com/electron/electron/releases，
     然后将下好的文件手动放置到“%localappdata%\electron\Cache”（windows）中，MAC放到“~/Library/Caches/electron”目录下
     
+    
+    
+ffi-napi与c++
+'string'    char*

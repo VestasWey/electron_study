@@ -5,6 +5,32 @@ const path = require('path');
 const bin_dir = path.join(process.cwd(), 'bin')
 const cwd_dir = path.dirname(__dirname)
 
+let study_main_lib
+let fn_set_pchar_callback1
+try {
+  study_main_lib = new ffi.Library(path.join(bin_dir, 'study_main.dll'),
+    {
+      'fn_add': ['int', ['int', 'int']],
+
+      'fn_set_pchar_callback1': ['void', ['string']],
+      'fn_set_pchar_callback2': ['void', ['string']],
+      'fn_set_pchar_callback3': ['void', ['string']],
+    })
+} catch (error) {
+  console.log(`ffi.Library err: ` + error);
+}
+
+function init_native_libs(){
+  fn_set_pchar_callback1 = ffi.Callback('void', ['string'], (str)=>{
+    console.log('ffi.fn_set_pchar_callback1: ' + str);
+  })
+  if(study_main_lib)
+  {
+    study_main_lib.fn_set_pchar_callback1(fn_set_pchar_callback1)
+    //study_main_lib.fn_set_pchar_callback2(fn_set_pchar_callback2)
+    //study_main_lib.fn_set_pchar_callback3(fn_set_pchar_callback3)
+  }
+}
 
 function createWindow() {
 
@@ -62,16 +88,9 @@ function createWindow() {
     click: (menuItem, browserWindow, event) => {
       //dialog.showSaveDialog(win)
       
-      try {
-        const cpp_lib = new ffi.Library(path.join(bin_dir, 'study_main.dll'),
-          {
-            'fn_add': ['int', ['int', 'int']]
-          });
-    
-        let ret = cpp_lib.fn_add(12312, 423423)
+      if (study_main_lib) {    
+        let ret = study_main_lib.fn_add(12312, 423423)
         dialog.showErrorBox('title', `the result of fn_add is: ` + ret)
-      } catch (error) {
-        dialog.showErrorBox('title', 'ffi.Library err: ' + error)
       }
     }
   }))
@@ -85,18 +104,7 @@ function createWindow() {
 }
 
 function initApp() {
-  try {
-    const cpp_lib = new ffi.Library(path.join(bin_dir, 'study_main.dll'),
-      {
-        'fn_add': ['int', ['int', 'int']]
-      });
-
-    let ret = cpp_lib.fn_add(12312, 423423)
-    console.log(`the result of fn_add is: ` + ret);
-  } catch (error) {
-    console.log(`ffi.Library err: ` + error);
-  }
-
+  init_native_libs()
   createWindow()
 }
 
@@ -130,6 +138,12 @@ app.on('browser-window-created', (event, window) => {
 
 // In this file you can include the rest of your app's specific main process
 // code. 也可以拆分成几个文件，然后用 require 导入。
+process.on('beforeExit', () => {
+  if(study_main_lib)
+  {
+  }
+})
+
 process.on('exit', () => {
-  ///////////////////////////////////
+  fn_set_pchar_callback1 = null
 })
