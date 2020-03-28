@@ -4,27 +4,29 @@
   "description": "elc demo",
   "main": "main/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "rebuild": "electron-rebuild"
   },
   "repository": {
     "type": "git",
-    "url": "electron_demo"
+    "url": "electron_study"
   },
   "author": "wh",
   "license": "MIT",
   "devDependencies": {
     "electron": "^8.2.0",
     "electron-builder": "^22.4.1",
+    "electron-rebuild": "^1.10.1",
     "ffi-napi": "^2.4.7",
     "yarn": "^1.22.4"
-  }, 
+  },
   "dependencies": {
     "ffi-napi": "^2.4.7"
   },
   "build": {
-    "productName": "electron_demo.productName",
-    "appId": "electron_demo.appid",
-    "copyright": "electron_demo.copyright",
+    "productName": "electron_study",
+    "appId": "electron_study.appid",
+    "copyright": "electron_study.copyright",
     "compression": "store",
     "directories": {
       "output": "build"
@@ -34,8 +36,7 @@
       "render",
       "html"
     ],
-    "extraResources": [
-    ],
+    "extraResources": [],
     "extraFiles": [
       "bin"
     ],
@@ -60,7 +61,7 @@
       "installerHeaderIcon": "assets/app_list.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "electron_demo"
+      "shortcutName": "electron_study"
     }
   }
 }

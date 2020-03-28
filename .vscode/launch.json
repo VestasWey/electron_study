@@ -5,18 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Electron Main",
             "type": "node",
             "request": "launch",
+            "name": "Electron Special JS",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "program": "${workspaceFolder}/main/main.js"
+            "program": "${workspaceFolder}/main/main.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         },
         {
-            "name": "Debug Main Process",
             "type": "node",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
+            "name": "Electron Main Process",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "cwd": "${workspaceFolder}",
             "windows": {
               "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
             },

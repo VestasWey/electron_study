@@ -1,5 +1,6 @@
 1、下载Node.js并安装（会同时安装npm）
     https://nodejs.org/dist/v12.16.1/node-v12.16.1-x64.msi
+    安装完Node.js后如果vscode调试时无法识别Node.js的路径就重启电脑
 
 2、找个地方创建项目目录（如elec-demo）
 
@@ -10,12 +11,19 @@
    随后目录下会生成package.json
 
 5、安装electron环境（--save-dev将electron环境装在项目目录内，防止装在全局影响到其他使用electron的app）
-    npm install electron --save-dev --verbose
+    //npm install electron --save-dev --verbose
     npm install electron --arch=ia32 --save-dev --verbose
     
+    安装electron-rebuild，用于必要时重编指定模块
+    npm install electron-rebuild --save-dev --verbose
+
     安装ffi-napi
-    npm install ffi-napi --save-dev --verbose
-    npm install ffi-napi --arch=ia32 --save-dev --verbose    
+    //npm install ffi-napi --save-dev --verbose
+    npm install ffi-napi --arch=ia32 --save-dev --verbose
+    
+    换了机器之后应该重新编译ffi-napi
+    npm rebuild ffi-napi --arch=ia32
+    npm rebuild ref-napi --arch=ia32
 
 6、vs code打开项目目录，添加.js文件和.html文件
 
