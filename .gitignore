@@ -19,5 +19,5 @@
 
 node_modules/node-addon-api/src/Release/
 
-build/
-bin/
+#build/
+#bin/
