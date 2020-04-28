@@ -1,0 +1,16 @@
+ffapi_study_full_path = get_path_info("../ffapi-study", "abspath")
+
+ffapi_study_sources =[
+    "$ffapi_study_full_path/pch.cpp",
+    "$ffapi_study_full_path/pch.h",
+    "$ffapi_study_full_path/framework.h",
+    "$ffapi_study_full_path/ffapi_study.h",
+    "$ffapi_study_full_path/ffapi_study.cpp",
+]
+
+if (is_win) {
+    ffapi_study_sources += [
+        #"$ffapi_study_full_path/UserFace.def",
+        "$ffapi_study_full_path/dllmain.cpp",
+    ]
+}

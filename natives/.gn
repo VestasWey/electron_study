@@ -1,2 +1,9 @@
-# The location of the build configuration file.
-buildconfig = "//build/BUILDCONFIG.gn"
+buildconfig = "//buildtools/BUILDCONFIG.gn"
+
+check_targets = [
+    "//modules/*",
+]
+
+default_args = {
+    is_component_build = false
+}
