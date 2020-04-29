@@ -84,10 +84,10 @@ config("default") {
       _include_dirs = [ "$win_vc/include" ]
     }
     _include_dirs += [
-      "$win_sdk/Include/$win_sdk_version/shared",
-      "$win_sdk/Include/$win_sdk_version/ucrt",
-      "$win_sdk/Include/$win_sdk_version/um",
-      "$win_sdk/Include/$win_sdk_version/winrt",
+      "$win_sdk_dir/Include/$win_sdk_version/shared",
+      "$win_sdk_dir/Include/$win_sdk_version/ucrt",
+      "$win_sdk_dir/Include/$win_sdk_version/um",
+      "$win_sdk_dir/Include/$win_sdk_version/winrt",
     ]
 
     if (is_clang) {
@@ -102,8 +102,8 @@ config("default") {
     }
 
     lib_dirs = [
-      "$win_sdk/Lib/$win_sdk_version/ucrt/$target_cpu",
-      "$win_sdk/Lib/$win_sdk_version/um/$target_cpu",
+      "$win_sdk_dir/Lib/$win_sdk_version/ucrt/$target_cpu",
+      "$win_sdk_dir/Lib/$win_sdk_version/um/$target_cpu",
     ]
     if (msvc == 2017) {
       lib_dirs +=
@@ -115,6 +115,9 @@ config("default") {
         lib_dirs += [ "$win_vc/lib/amd64" ]
       }  
     }
+
+    print(_include_dirs)
+    print(lib_dirs)
   } else {
     cflags += [
       "-fstrict-aliasing",

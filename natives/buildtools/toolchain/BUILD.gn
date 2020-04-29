@@ -39,24 +39,16 @@ if (host_os == "win") {
 toolchain("msvc") {
   lib_dir_switch = "/LIBPATH:"
 
-  # if (msvc == 2017) {
-  #   bin = "$win_vc/Tools/MSVC/$win_toolchain_version/bin/HostX64/$target_cpu"
-  # } else {
-  #   if (target_cpu == "x86") {
-  #     bin = "$win_vc/bin"
-  #   } else {
-  #     bin = "$win_vc/bin/amd64"
-  #   }
-  # }
-
-  env_setup = ""
-  if (target_cpu == "x86") {
-    # Toolchain asset includes a script that configures for x86 building.
-    # We don't support x86 builds with local MSVC installations.
-    # env_setup = "cmd /c $win_sdk/bin/SetEnv.cmd /x86 && "
-    
-    env_setup = "\"$win_vc/Auxiliary/Build/vcvarsall.bat\" &&"
-  }
+  win_toolchain_data = exec_script("setup_toolchain.py",
+                                   [
+                                     "$win_vc",
+                                     "$win_sdk_dir",
+                                     "win",
+                                     "$target_cpu",
+                                     "$win_sdk_version",
+                                     "none"
+                                   ],
+                                   "scope")
 
   cl_m32_flag = ""
   if (clang_win != "") {
@@ -68,7 +60,9 @@ toolchain("msvc") {
     }
     cl = "$clang_win/bin/clang-cl.exe"
   } else {
-    cl = "cl.exe"
+    cl = "${win_toolchain_data.vc_bin_dir}/cl.exe"
+    lib = "${win_toolchain_data.vc_bin_dir}/lib.exe"
+    lnk = "${win_toolchain_data.vc_bin_dir}/link.exe"
   }
 
   tool("asm") {
@@ -78,7 +72,9 @@ toolchain("msvc") {
     }
     _ml += ".exe"
 
-    command = "cmd /c \"$env_setup $_ml {{asmflags}} /nologo /c /Fo {{output}} {{source}}\""
+    ml = "${win_toolchain_data.vc_bin_dir}/" + _ml
+
+    command = "\"$ml\" {{asmflags}} /nologo /c /Fo {{output}} {{source}}"
     outputs = [
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
     ]
@@ -91,7 +87,7 @@ toolchain("msvc") {
     pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
 
     # Label names may have spaces so pdbname must be quoted.
-    command = "cmd /c \"$env_setup $cc_wrapper $cl /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
+    command = "$cc_wrapper \"$cl\" /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
     if (win_xp) {
         command += " /D_USING_V110_SDK71_"
     }
@@ -110,7 +106,7 @@ toolchain("msvc") {
     pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
 
     # Label names may have spaces so pdbname must be quoted.
-    command = "cmd /c \"$env_setup $cc_wrapper $cl /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
+    command = "$cc_wrapper \"$cl\" /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     if (win_xp) {
         command += " /D_USING_V110_SDK71_"
     }
@@ -125,9 +121,8 @@ toolchain("msvc") {
 
   tool("alink") {
     rspfile = "{{output}}.rsp"
-    lib = "lib.exe"
 
-    command = "cmd /c \"$env_setup $lib /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile\""
+    command = "\"$lib\" /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile"
     if (win_xp) {
         command += " /SUBSYSTEM:WINDOWS,5.01"
     }
@@ -149,9 +144,8 @@ toolchain("msvc") {
     libname = "${dllname}.lib"
     pdbname = "{{output_dir}}/{{target_output_name}}.pdb"
     rspfile = "${dllname}.rsp"
-    lnk = "link.exe"
 
-    command = "cmd /c \"$env_setup $lnk /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile\""
+    command = "\"$lnk\" /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
     if (win_xp) {
         command += " /SUBSYSTEM:WINDOWS,5.01"
     }
@@ -182,9 +176,8 @@ toolchain("msvc") {
     exename = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
     pdbname = "$exename.pdb"
     rspfile = "$exename.rsp"
-    lnk = "link.exe"
 
-    command = "cmd /c \"$env_setup $lnk /nologo /OUT:$exename /PDB:$pdbname @$rspfile\""
+    command = "\"$lnk\" /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
     if (win_xp) {
         command += " /SUBSYSTEM:WINDOWS,5.01"
     }

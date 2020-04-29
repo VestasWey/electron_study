@@ -28,13 +28,13 @@ declare_args() {
   cc = "cc"
   cxx = "c++"
 
-  win_sdk = "C:/Program Files (x86)/Windows Kits/10"
-  win_sdk_version = ""
+  win_sdk_dir = "C:/Program Files (x86)/Windows Kits/10"
+  win_sdk_version = "10.0.18362.0"
 
   win_vc = ""
-  win_vc_ver = ""
-  win_xp = false
+  win_vc_ver = "2017"
   win_toolchain_version = ""
+  win_xp = false
 
   clang_win = ""
 
@@ -216,11 +216,11 @@ if (target_os == "win") {
   }
   if (win_sdk_version == "") {
     win_sdk_version = exec_script("//buildtools/BUIDCONFIG_win_highest_version_vcdir.py",
-                                  [
-                                    "$win_sdk/Include",
-                                    "[0-9]{2}\.[0-9]\.[0-9]{5}\.[0-9]",
-                                  ],
-                                  "trim string")
+                         [
+                           "$win_sdk_dir/Include",
+                           "[0-9]{2}\.[0-9]\.[0-9]{5}\.[0-9]",
+                         ],
+                         "trim string")
   }
 }
 

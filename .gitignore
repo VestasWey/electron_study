@@ -9,8 +9,10 @@
 *.obj
 *.tlog
 *.lastbuildstate
+*.pyc
 
 .vs/
+.idea/
 
 # Build results
 
