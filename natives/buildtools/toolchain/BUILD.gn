@@ -39,16 +39,24 @@ if (host_os == "win") {
 toolchain("msvc") {
   lib_dir_switch = "/LIBPATH:"
 
-  win_toolchain_data = exec_script("setup_toolchain.py",
-                                   [
-                                     "$win_vc",
-                                     "$win_sdk_dir",
-                                     "win",
-                                     "$target_cpu",
-                                     "$win_sdk_version",
-                                     "none"
-                                   ],
-                                   "scope")
+  #win_toolchain_data = exec_script("setup_toolchain.py",
+  #                                 [
+  #                                   "$win_vc",
+  #                                   "$win_sdk_dir",
+  #                                   "win",
+  #                                   "$target_cpu",
+  #                                   "$win_sdk_version",
+  #                                   "none"
+  #                                 ],
+  #                                 "scope")
+
+  env_setup = "\"$win_vc/Auxiliary/Build/vcvarsall.bat\""
+  #if (target_cpu == "x86") {
+  #  # Toolchain asset includes a script that configures for x86 building.
+  #  # We don't support x86 builds with local MSVC installations.
+  #  # env_setup = "cmd /c $win_sdk/bin/SetEnv.cmd /x86 && "
+  #  env_setup = "\"$win_vc/Auxiliary/Build/vcvarsall.bat\""
+  #}
 
   cl_m32_flag = ""
   if (clang_win != "") {
@@ -60,9 +68,10 @@ toolchain("msvc") {
     }
     cl = "$clang_win/bin/clang-cl.exe"
   } else {
-    cl = "${win_toolchain_data.vc_bin_dir}/cl.exe"
-    lib = "${win_toolchain_data.vc_bin_dir}/lib.exe"
-    lnk = "${win_toolchain_data.vc_bin_dir}/link.exe"
+    cl = "cl.exe"
+    lib = "lib.exe"
+    lnk = "link.exe"
+    rc = "rc.exe"
   }
 
   tool("asm") {
@@ -72,9 +81,9 @@ toolchain("msvc") {
     }
     _ml += ".exe"
 
-    ml = "${win_toolchain_data.vc_bin_dir}/" + _ml
-
-    command = "\"$ml\" {{asmflags}} /nologo /c /Fo {{output}} {{source}}"
+    #ml = "${win_toolchain_data.vc_bin_dir}/" + _ml
+    #command = "\"$ml\" {{asmflags}} /nologo /c /Fo {{output}} {{source}}"
+    command = "cmd /c \"$env_setup $target_cpu $win_sdk_version && $_ml {{asmflags}} /nologo /c /Fo {{output}} {{source}}\""
     outputs = [
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
     ]
@@ -87,7 +96,8 @@ toolchain("msvc") {
     pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
 
     # Label names may have spaces so pdbname must be quoted.
-    command = "$cc_wrapper \"$cl\" /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
+    #command = "$cc_wrapper \"$cl\" /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
+    command = "cmd /c \"$cc_wrapper $env_setup $target_cpu $win_sdk_version && $cl /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
     if (win_xp) {
         command += " /D_USING_V110_SDK71_"
     }
@@ -106,7 +116,8 @@ toolchain("msvc") {
     pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
 
     # Label names may have spaces so pdbname must be quoted.
-    command = "$cc_wrapper \"$cl\" /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+    command = "cmd /c \"$cc_wrapper $env_setup $target_cpu $win_sdk_version && $cl /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\"\""
+    #command = "$cc_wrapper \"$cl\" /FS /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     if (win_xp) {
         command += " /D_USING_V110_SDK71_"
     }
@@ -122,7 +133,8 @@ toolchain("msvc") {
   tool("alink") {
     rspfile = "{{output}}.rsp"
 
-    command = "\"$lib\" /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile"
+    #command = "\"$lib\" /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile"
+    command = "cmd /c \"$env_setup $target_cpu $win_sdk_version && $lib /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile\""
     if (win_xp) {
         command += " /SUBSYSTEM:WINDOWS,5.01"
     }
@@ -145,7 +157,8 @@ toolchain("msvc") {
     pdbname = "{{output_dir}}/{{target_output_name}}.pdb"
     rspfile = "${dllname}.rsp"
 
-    command = "\"$lnk\" /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
+    #command = "\"$lnk\" /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
+    command = "cmd /c \"$env_setup $target_cpu $win_sdk_version && $lnk /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile\""
     if (win_xp) {
         command += " /SUBSYSTEM:WINDOWS,5.01"
     }
@@ -177,7 +190,8 @@ toolchain("msvc") {
     pdbname = "$exename.pdb"
     rspfile = "$exename.rsp"
 
-    command = "\"$lnk\" /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
+    #command = "\"$lnk\" /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
+    command = "cmd /c \"$env_setup $target_cpu $win_sdk_version && $lnk /nologo /OUT:$exename /PDB:$pdbname @$rspfile\""
     if (win_xp) {
         command += " /SUBSYSTEM:WINDOWS,5.01"
     }
@@ -191,6 +205,15 @@ toolchain("msvc") {
     # inputs_newline works around a fixed per-line buffer size in the linker.
     rspfile_content = "{{inputs_newline}} {{libs}} {{solibs}} {{ldflags}}"
     description = "link {{output}}"
+  }
+
+  tool("rc") {
+    command = "cmd /c \"$env_setup $target_cpu $win_sdk_version && $rc /nologo {{include_dirs}} /fo{{output}} {{source}}\""
+    depsformat = "msvc"
+    outputs = [
+      "{{source_out_dir}}/{{target_output_name}}.res",
+    ]
+    description = "RC {{output}}"
   }
 
   tool("stamp") {

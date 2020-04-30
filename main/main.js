@@ -8,7 +8,7 @@ const cwd_dir = path.dirname(__dirname)
 let study_main_lib
 let fn_set_pchar_callback1
 try {
-  study_main_lib = new ffi.Library(path.join(bin_dir, 'study_main.dll'),
+  study_main_lib = new ffi.Library(path.join(bin_dir, 'ffapi_study'),
     {
       'fn_add': ['int', ['int', 'int']],
 

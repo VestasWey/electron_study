@@ -4,5 +4,9 @@ import("ffapi-study/ffapi_study.gni")
 library("ffapi_study")
 {
     sources = ffapi_study_sources
+
+    defines = [
+            "ELECSTUDY_EXPORTS",
+        ]
 }
 

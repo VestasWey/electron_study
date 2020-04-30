@@ -14,18 +14,18 @@ template("library") {
 
     target(type, target_name) {
         configs += [ 
-            "//:qt_config",
+            "//:common_config",
         ]
         
         sources = invoker.sources
         # output_prefix_override = true
         
         output_dir = "$root_out_dir"
-        # if (!is_debug) {
-        #     output_dir += "/release"
-        # } else {
-        #     output_dir += "/debug"
-        # }
+        #if (!is_debug) {
+        #    output_dir += "/release"
+        #} else {
+        #    output_dir += "/debug"
+        #}
         
         lib_dirs = [ 
             rebase_path("$output_dir/libs"),
@@ -128,17 +128,18 @@ template("st_library") {
         }
 
         configs += [ 
-            "//:qt_config",
+            "//:common_config",
         ]
         sources = invoker.sources
         # output_prefix_override = true
 
         output_dir = "$root_out_dir/libs"
-        # if (!is_debug) {
-        #     output_dir += "/release/libs"
-        # } else {
-        #     output_dir += "/debug/libs"
-        # }
+        #if (!is_debug) {
+        #    output_dir += "/release/libs"
+        #} else {
+        #    output_dir += "/debug/libs"
+        #}
+        
         lib_dirs = [ 
             rebase_path("$output_dir"),
         ]

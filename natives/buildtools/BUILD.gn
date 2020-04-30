@@ -115,9 +115,6 @@ config("default") {
         lib_dirs += [ "$win_vc/lib/amd64" ]
       }  
     }
-
-    print(_include_dirs)
-    print(lib_dirs)
   } else {
     cflags += [
       "-fstrict-aliasing",

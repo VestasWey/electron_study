@@ -45,9 +45,9 @@ if (is_linux) {
 #} else {
 #    executable("test") {
 #        if (defined(configs)) {
-#            configs += [ ":qt_config" ]
+#            configs += [ ":common_config" ]
 #        } else {
-#            configs = [ ":qt_config" ]
+#            configs = [ ":common_config" ]
 #        }
 #        
 #        deps = [
@@ -69,7 +69,7 @@ if (is_linux) {
 #}
 
 # 工程配置
-config("qt_config") {
+config("common_config") {
     
     cflags_cc = []
     include_dirs = [
