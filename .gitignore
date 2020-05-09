@@ -16,12 +16,15 @@
 
 # Build results
 
-[Dd]ebug/
-[Rr]elease/
+**/[Dd]ebug/
+**/[Rr]elease/
 
-node_modules/node-addon-api/src/Release/
-node_modules/electron/dist/
+# customize
 natives/out/
-
 /build
 /bin
+
+# node_modules relate
+node_modules/electron/dist/
+node_modules/**/.bin/
+node_modules/**/prebuilds/
