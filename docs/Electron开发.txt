@@ -11,22 +11,26 @@
     随后目录下会生成package.json
 
 5、安装electron环境（--save-dev将electron环境装在项目目录内，防止装在全局影响到其他使用electron的app）
-    //npm install electron --save-dev --verbose
-    npm install electron --platform=win32 --arch=ia32 --save-dev --verbose
+    npm install electron@9.0.0 --platform=win32 --arch=ia32 --save-dev --verbose
+    
     platform=win32代表的就是Windows平台，没有win64选项，程序内要判断是不是64位程序要用os.arch()去确认，
     node os.platform() 没有 win64 的返回的，只有在返回 win32 基础上，你再使用 os.arch() 去确定是否是win64
     可能的合法值：darwin、win64、win32
 
+    Windows下下载electron缓慢，用直接直接Caches目录直接复制的方法不行，采用在执行命令前指定镜像地址变量的方法：
+    set ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/
+
     MAC下不考虑位数问题，OS X 10.6之后全是64了，--platform=darwin
-    npm install electron@8.2.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
+    npm install electron@9.0.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
+
     MAC下下载electron缓慢，用直接直接Caches目录直接复制的方法不行，采用在执行命令前指定镜像地址的方法：
-    ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/ npm install electron@8.2.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
+    ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/ npm install electron@9.0.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
     
     安装electron-rebuild，用于必要时重编指定模块
-    npm install electron-rebuild --save-dev --verbose
+    npm install electron-rebuild@1.10.1 --save-dev --verbose
 
     安装ffi-napi:
-    npm install ffi-napi --arch=ia32 --save-dev --verbose
+    npm install ffi-napi@2.5.0 --arch=ia32 --save-dev --verbose
 
     MAC下不用带--arch参数:
     npm install ffi-napi --save-dev --verbose
@@ -52,17 +56,21 @@
         "build:mac": "node .electron-vue/build.js && electron-builder --mac",
     }
 
-9、全局安装electron-builder用于打包
+9、安装electron-builder用于打包
+    npm install electron-builder@22.4.1 --save-dev --verbose
     //npm install -g electron-builder
-    //会装在：C:\Users\xxxx\AppData\Roaming\npm\node_modules
-    npm install electron-builder --save-dev --verbose
+    //全局会装在：C:\Users\xxxx\AppData\Roaming\npm\node_modules
 
 10、打包（package.json里指定nsis为打包器的话electron-builder会自己下载）
     node_modules\.bin\electron-builder build
     
     打包过程中遇到依赖环境下载不了时直接手动下载，https://github.com/electron/electron/releases，
     然后将下好的文件手动放置到“%localappdata%\electron\Cache”（windows）中，MAC放到“~/Library/Caches/electron”目录下
-    
+    是要把下载好的压缩包解压出来放到对应模块名称目录下的对应版本号目录，例如
+    需要下的是“winCodeSign”，按命令行提示需要下载“https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z”，
+    那么下好后直接把下好的.7z包解压放置到“%localappdata%\electron\Cache\winCodeSign\winCodeSign-2.6.0”中
+
+    To ensure your native dependencies are always matched electron version, simply add script `"postinstall": "electron-builder install-app-deps" to your `package.json`
     
     
 ffi-napi与c++

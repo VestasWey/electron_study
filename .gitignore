@@ -26,5 +26,3 @@ natives/out/
 
 # node_modules relate
 node_modules/electron/dist/
-node_modules/**/.bin/
-node_modules/**/prebuilds/
