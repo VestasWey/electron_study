@@ -167,102 +167,6 @@ config("default") {
     libs += [ malloc ]
   }
 
-  if (is_android) {
-    if (is_clang) {
-      cflags += [
-        "--target=$ndk_target",
-      ]
-      cflags_cc += [
-        "-isystem$ndk/sources/cxx-stl/llvm-libc++/include",
-        "-isystem$ndk/sources/cxx-stl/llvm-libc++abi/include",
-      ]
-      ldflags += [
-        "--target=$ndk_target",
-      ]
-      lib_dirs = [
-        "$ndk/sources/cxx-stl/llvm-libc++/libs/$ndk_stdlib",
-      ]
-      libs += [
-        "c++_static",
-        "c++abi",
-      ]
-      if (ndk_api < 21) {
-        libs += [ "android_support" ]
-      }
-    } else {
-      cflags_cc += [
-        "-isystem$ndk/sources/cxx-stl/gnu-libstdc++/4.9/include",
-        "-isystem$ndk/sources/cxx-stl/gnu-libstdc++/4.9/libs/$ndk_stdlib/include",
-      ]
-      lib_dirs = [
-        "$ndk/sources/cxx-stl/gnu-libstdc++/4.9/libs/$ndk_stdlib",
-      ]
-      libs += [
-        "gnustl_static",
-        "supc++",
-      ]
-    }
-
-    asmflags += [ "--target=$ndk_target" ]
-    cflags += [
-      "--sysroot=$ndk/sysroot",
-      "-isystem$ndk/sysroot/usr/include/$ndk_target",
-      "-D__ANDROID_API__=$ndk_api",
-    ]
-    
-    cflags_cc += [
-      "-isystem$ndk/sources/android/support/include",
-    ]
-    if (use_qt_for_android) {
-      cflags_cc += [
-        "-I$qt_sdk/$qt_sdk_target/include",
-        "-I$qt_sdk/$qt_sdk_target/include/QtCore",
-        "-I$qt_sdk/$qt_sdk_target/include/QtAndroidExtras",
-      ]
-    }
-    
-    ldflags += [
-      "--sysroot=$ndk/platforms/$ndk_platform",
-      "-B$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/$ndk_target/bin",
-    ]
-    lib_dirs += [
-      "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/lib/gcc/$ndk_target/4.9.x",
-      "$qt_sdk/$qt_sdk_target/lib",
-    ]
-  }
-
-  if (is_ios) {
-    _target = target_cpu
-    if (target_cpu == "arm") {
-      _target = "armv7"
-    } else if (target_cpu == "x86") {
-      _target = "i386"
-    } else if (target_cpu == "x64") {
-      _target = "x86_64"
-    }
-    asmflags += [
-      "-isysroot",
-      ios_sysroot,
-      "-arch",
-      _target,
-    ]
-    cflags += [
-      "-isysroot",
-      ios_sysroot,
-      "-arch",
-      _target,
-    ]
-    cflags_cc += [ "-stdlib=libc++" ]
-    ldflags += [
-      "-isysroot",
-      ios_sysroot,
-      "-arch",
-      _target,
-      "-stdlib=libc++",
-    ]
-    libs += [ "objc" ]
-  }
-
   if (is_linux) {
     libs += [ "pthread" ]
     if (is_debug && sanitize == "") {
@@ -282,7 +186,7 @@ config("default") {
   # Exception sanitizer
   # 异常检测
   # 1)  ASAN: Address Sanitizer 泄漏/崩溃等异常地址检测
-  # 2) UBSAN: Undefined Behavior Sanitizer 未定义行为检测
+  # 2)  UBSAN: Undefined Behavior Sanitizer 未定义行为检测
   # 3)  TSAN: Thread Sanitizer 线程异常检测
   # 4)  MSAN: Memory Sanitizer 内存异常检测
   # -------------------------------------------------------------------------
@@ -512,12 +416,7 @@ config("extra_flags") {
 config("debug_symbols") {
   # It's annoying to wait for full debug symbols to push over
   # to Android devices.  -gline-tables-only is a lot slimmer.
-  if (is_android) {
-    cflags = [
-      "-gline-tables-only",
-      "-funwind-tables",  # Helps make in-process backtraces fuller.
-    ]
-  } else if (is_win) {
+  if (is_win) {
     cflags = [ "/Zi" ]
     ldflags = [ "/DEBUG" ]
   } else {
@@ -580,12 +479,7 @@ config("release") {
 # 可执行文件
 # -------------------------------------------------------------------------
 config("executable") {
-  if (is_android) {
-    ldflags = [
-      "-pie",
-      "-rdynamic",
-    ]
-  } else if (is_mac) {
+  if (is_mac) {
     ldflags = [ "-Wl,-rpath,@loader_path/." ]
   } else if (is_linux) {
     ldflags = [
