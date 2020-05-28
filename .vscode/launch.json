@@ -5,6 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: 当前文件",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "x64"
+            ],
+            "windows": {
+                "args": [
+                    "ia32"
+                ]
+            }
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Electron Special JS",
@@ -21,9 +36,11 @@
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
             "cwd": "${workspaceFolder}",
             "windows": {
-              "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+                "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
             },
-            "args" : ["."]
+            "args": [
+                "."
+            ]
         }
     ]
 }

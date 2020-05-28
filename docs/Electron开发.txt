@@ -17,14 +17,23 @@
     node os.platform() 没有 win64 的返回的，只有在返回 win32 基础上，你再使用 os.arch() 去确定是否是win64
     可能的合法值：darwin、win64、win32
 
-    Windows下下载electron缓慢，用直接直接Caches目录直接复制的方法不行，采用在执行命令前指定镜像地址变量的方法：
-    set ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/
+    Windows下下载electron缓慢，可采用设置镜像地址或是迅雷下好包直接放置到缓存目录的方式：
+    方式一：采用在执行命令前指定镜像地址变量的方法：
+    set ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/
+    
+    方式二：把下好的electron.zip包及其SHASUMS256.txt放置到缓存目录
+    例如.zip和.txt分别为“electron-v9.0.0-win32-ia32.zip”、“SHASUMS256.txt”，则在“%localappdata%\electron\Cache”目录中创建分别存放这两个文件的缓存目录，
+    缓存目录的命名规则为“下载地址(URL地址去掉所有斜杠) + v版本号 + 实际文件全名”，
+    例如默认从github下载9.0.0版本的win32x86的electron，则缓存目录为：
+    “httpsgithub.comelectronelectronreleasesdownloadv9.0.0electron-v9.0.0-win32-ia32.zip”、“httpsgithub.comelectronelectronreleasesdownloadv9.0.0SHASUMS256.txt”，
+    从淘宝镜像下载，则缓存目录名为：
+    “httpsnpm.taobao.orgmirrorselectronv9.0.0electron-v9.0.0-win32-ia32.zip”、“httpsnpm.taobao.orgmirrorselectronv9.0.0SHASUMS256.txt”
 
     MAC下不考虑位数问题，OS X 10.6之后全是64了，--platform=darwin
     npm install electron@9.0.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
 
     MAC下下载electron缓慢，用直接直接Caches目录直接复制的方法不行，采用在执行命令前指定镜像地址的方法：
-    ELECTRON_MIRROR=http://npm.taobao.org/mirrors/electron/ npm install electron@9.0.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
+    ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/ npm install electron@9.0.0 --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
     
     安装electron-rebuild，用于必要时重编指定模块
     npm install electron-rebuild@1.10.1 --save-dev --verbose
