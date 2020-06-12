@@ -131,17 +131,17 @@ def archive_interfaces(kernel_path, dispatch_path, platform):
     sour = os.path.join(kernel_path, 'base', 'asynevent')
     cp_interfaces(sour, dest)
 
-    dest = os.path.join(include_path, 'common_types.h')
-    sour = os.path.join(kernel_path, 'common_types.h')
-    shutil.copy2(sour, dest)
-
-    dest = os.path.join(include_path, 'typedefs.h')
-    sour = os.path.join(kernel_path, 'typedefs.h')
-    shutil.copy2(sour, dest)
-
-    dest = os.path.join(include_path, 'comdefs.h')
-    sour = os.path.join(kernel_path, 'comdefs.h')
-    shutil.copy2(sour, dest)
+    #dest = os.path.join(include_path, 'common_types.h')
+    #sour = os.path.join(kernel_path, 'common_types.h')
+    #shutil.copy2(sour, dest)
+#
+    #dest = os.path.join(include_path, 'typedefs.h')
+    #sour = os.path.join(kernel_path, 'typedefs.h')
+    #shutil.copy2(sour, dest)
+#
+    #dest = os.path.join(include_path, 'comdefs.h')
+    #sour = os.path.join(kernel_path, 'comdefs.h')
+    #shutil.copy2(sour, dest)
 
 def archive_win(kernel_path, build_cache_path, dispatch_path, dispath_cpu):
     dest = os.path.join(dispatch_path)
@@ -245,7 +245,7 @@ def main():
     parser.add_argument('--targetcpu', required=True)
     args = parser.parse_args()
 
-    archive_interfaces(args.kernel, args.outpath, args.platform)
+    #archive_interfaces(args.kernel, args.outpath, args.platform)
 
     if args.platform == "mac":
         archive_mac(args.kernel, args.cachepath, os.path.join(args.outpath, args.buildmode), args.targetcpu)
@@ -257,5 +257,5 @@ def main():
         archive_win(args.kernel, args.cachepath, os.path.join(args.outpath, args.buildmode), args.targetcpu)
 
 if __name__ == '__main__':
-  #sys.exit(main())
+  sys.exit(main())
   pass

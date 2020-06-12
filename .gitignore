@@ -20,12 +20,8 @@
 **/[Rr]elease/
 
 # customize
-natives/out/
 /build
 /bin
 
 # node_modules relate
-node_modules/electron/dist/
-node_modules/electron/path.txt
-node_modules/electron/package.json
-node_modules/.bin/electron
+node_modules/

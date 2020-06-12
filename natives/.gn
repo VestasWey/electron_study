@@ -1,4 +1,4 @@
-buildconfig = "//buildtools/BUILDCONFIG.gn"
+buildconfig = "//build/BUILDCONFIG.gn"
 
 check_targets = [
     "//modules/*",

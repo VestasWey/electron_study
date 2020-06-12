@@ -8,7 +8,7 @@ template("library") {
         type = "shared_library"
     } 
 
-    if (is_mac || is_android) {
+    if (is_mac) {
         type = "source_set"
     }
 

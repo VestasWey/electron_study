@@ -3,29 +3,9 @@ declare_args() {
   host_cc = cc
   host_cxx = cxx
 
-  if (is_android) {
-    if (host_os == "win") {
-      target_ar = "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/$ndk_target/bin/ar.exe"
-      target_cc = "$ndk/toolchains/llvm/prebuilt/$ndk_host/bin/clang.exe"
-      target_cxx = "$ndk/toolchains/llvm/prebuilt/$ndk_host/bin/clang++.exe"
-      if (!is_clang) {
-        target_cc = "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/bin/${ndk_target}-gcc.exe"
-        target_cxx = "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/bin/${ndk_target}-g++.exe"
-      }
-    } else {
-      target_ar = "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/$ndk_target/bin/ar"
-      target_cc = "$ndk/toolchains/llvm/prebuilt/$ndk_host/bin/clang"
-      target_cxx = "$ndk/toolchains/llvm/prebuilt/$ndk_host/bin/clang++"
-      if (!is_clang) {
-        target_cc = "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/bin/${ndk_target}-gcc"
-        target_cxx = "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/bin/${ndk_target}-g++"
-      }
-    }
-  } else {
-    target_ar = ar
-    target_cc = cc
-    target_cxx = cxx
-  }
+  target_ar = ar
+  target_cc = cc
+  target_cxx = cxx
 
   cc_wrapper = ""
 }

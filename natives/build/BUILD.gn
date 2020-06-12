@@ -18,29 +18,6 @@ declare_args() {
 }
 
 # -------------------------------------------------------------------------
-# Find iOS sysroot for target cpu
-# 获取目标机器运行环境的sysroot
-# 1）  arm指令集：arm/armv7/armv7-a/arm64等，对应iphoneos/appletvos
-# 2）intel指令集：x86/x64，只有模拟器环境，对应iphonesimulator/appletvsimulator
-# -------------------------------------------------------------------------
-if (is_ios) {
-  if (target_cpu == "x86" || target_cpu == "x64") {
-    if (is_tvos) {
-      sdk = "appletvsimulator"
-    } else {
-      sdk = "iphonesimulator"
-    }
-  } else {
-    if (is_tvos) {
-      sdk = "appletvos"
-    } else {
-      sdk = "iphoneos"
-    }
-  }
-  ios_sysroot = exec_script("BUILD_ios_find_sysroot.py", [ sdk ], "trim string")
-}
-
-# -------------------------------------------------------------------------
 # Config default for build
 # 配置缺省编译参数
 # 1)       cflags: C/C++/Objective-C所有C编译器编译参数
@@ -124,7 +101,7 @@ config("default") {
 
     # The main idea is to slim the exported API, but these flags also improve link time on Mac.
     # These would make stack traces worse on Linux, so we don't just set them willy-nilly.
-    if (is_component_build || is_ios || is_mac) {
+    if (is_mac) {
       cflags += [ "-fvisibility=hidden" ]
       cflags_cc += [ "-fvisibility-inlines-hidden" ]
     }
@@ -307,17 +284,6 @@ config("warnings") {
       "-Wno-unknown-warning-option",  # Let older Clangs ignore newer Clangs' warnings.
     ]
 
-    if (target_cpu == "arm" && is_ios) {
-      # Clang seems to think new/malloc will only be 4-byte aligned on 32-bit iOS.
-      # We're pretty sure it's actually 8-byte alignment.
-      cflags += [ "-Wno-over-aligned" ]
-    }
-    if (target_cpu == "x86" && is_android) {
-      # Clang seems to think new/malloc will only be 4-byte aligned on 32-bit x86 Android builds.
-      # We're pretty sure it's actually 8-byte alignment.  See OverAlignedTest.cpp for more info.
-      cflags += [ "-Wno-over-aligned" ]
-    }
-
     # Shouldn't be necessary for local builds. With distributed Windows builds, files may lose
     # their case during copy, causing case-sensitivity mismatch on remote machines.
     cflags += [
@@ -458,7 +424,7 @@ config("release") {
       "-fdata-sections",
       "-ffunction-sections",
     ]
-    if (is_mac || is_ios) {
+    if (is_mac) {
       ldflags = [ "-dead_strip" ]
     } else {
       ldflags = [ "-Wl,--gc-sections" ]

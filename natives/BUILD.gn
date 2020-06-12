@@ -37,36 +37,35 @@ if (is_linux) {
 }
 
 # 组装工程和编译后执行动作
-#if (!is_test) {
-#    group("ccore"){
-#        deps = projects
-#        deps += [ "//:dispatch_for_ide" ]
-#    }
-#} else {
-#    executable("test") {
-#        if (defined(configs)) {
-#            configs += [ ":common_config" ]
-#        } else {
-#            configs = [ ":common_config" ]
-#        }
-#        
-#        deps = [
-#            "//modules:MessageSync",
-#            "//modules:LogModule",
-#        ]
-#
-#        sources = [
-#            "//test.cpp",
-#        ]
-#
-#        if (is_mac) {
-#            libs = [ "Foundation.framework" ]
-#        }
-#        
-#
-#        output_dir = "$root_out_dir"
-#    }
-#}
+if (!is_test) {
+    group("ccore"){
+        deps = projects
+        deps += [ "//:dispatch_for_ide" ]
+    }
+} else {
+    executable("test") {
+        if (defined(configs)) {
+            configs += [ ":common_config" ]
+        } else {
+            configs = [ ":common_config" ]
+        }
+        
+        deps = [
+            "//modules:ffapi_study",
+        ]
+
+        sources = [
+            "//test.cpp",
+        ]
+
+        if (is_mac) {
+            libs = [ "Foundation.framework" ]
+        }
+        
+
+        output_dir = "$root_out_dir"
+    }
+}
 
 # 工程配置
 config("common_config") {
@@ -107,27 +106,15 @@ config("common_config") {
         }
     }
 
-    if (is_android) {
-        defines = [
-            "CCORE_ANDROID",
-        ]
-    } 
-    
     if (is_linux) {
         defines = [
             "CCORE_LINUX",
         ]
     }
 
-    if (!is_android) {
-        defines += [
-            "AGORA_2_0",
-        ]
-    } else {
-        defines += [
-            "AGORA_2_2",
-        ]
-    }
+    defines += [
+        "AGORA_2_0",
+    ]
 
     if (is_debug) {
         defines += [ "DEBUG", ]
@@ -140,7 +127,7 @@ config("common_config") {
 action("dispatch_for_ide") {
     arg = [
         "--kernel", rebase_path("//"),
-        "--outpath", rebase_path("//out"),
+        "--outpath", rebase_path("//out/publishes"),
         "--cachepath", rebase_path("$root_out_dir"),
     ]
 
@@ -152,18 +139,13 @@ action("dispatch_for_ide") {
 
     if (is_mac) {
         arg += ["--platform", "mac"]
-    } else if (is_ios) {
-        arg += ["--platform", "ios"]
-    } else if (is_android) {
-        arg += ["--platform", "android"]
     } else if (is_win) {
         arg += ["--platform", "win"]
     }
 
     arg += ["--targetcpu", "${target_cpu}"]
     
-    #script = "dispatch_for_ide.py"
-    script = "cmd.exe"
+    script = "dispatch_for_ide.py"
     outputs = [ "$root_out_dir/libccore_gn.a" ]
     args = arg
     deps = projects
