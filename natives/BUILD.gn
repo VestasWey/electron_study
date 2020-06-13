@@ -40,7 +40,7 @@ if (is_linux) {
 if (!is_test) {
     group("ccore"){
         deps = projects
-        deps += [ "//:dispatch_for_ide" ]
+        #deps += [ "//:dispatch_for_ide" ]
     }
 } else {
     executable("test") {

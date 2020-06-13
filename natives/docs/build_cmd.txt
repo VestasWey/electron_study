@@ -1,10 +1,10 @@
 生成windows VisualStudio 工程
-build/bin/win/gn gen out/debug --args="target_cpu=\""x86\"" is_debug=true win_sdk_version=\""10.0.18362.0\""" --ide=vs2017 --winsdk=10.0.18362.0 --sln=all-debug
+"build/bin/win/gn" gen out/debug --args="target_cpu=\"x86\" is_debug=true" --ide=vs2017 --winsdk=10.0.18362.0 --sln=all-debug
 
 生成mac XCode 工程
 
 列出gn参数
-gn args --list <out_dir>
+"build/bin/win/gn" args --list out/debug
 
 编译
-build/bin/win/ninja -j 8 -C out/debug ffapi_study
+"build/bin/win/ninja" -j 8 -C out/debug ffapi_study

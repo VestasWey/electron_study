@@ -30,7 +30,7 @@ toolchain("msvc") {
   #                                 ],
   #                                 "scope")
 
-  env_setup = "\"$win_vc/Auxiliary/Build/vcvarsall.bat\""
+  env_setup = "\"$win_vc_dir/Auxiliary/Build/vcvarsall.bat\""
   #if (target_cpu == "x86") {
   #  # Toolchain asset includes a script that configures for x86 building.
   #  # We don't support x86 builds with local MSVC installations.

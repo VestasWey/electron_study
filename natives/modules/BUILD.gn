@@ -9,6 +9,33 @@ library("ffapi_study")
             "ELECSTUDY_EXPORTS",
         ]
 
-    
+    #deps = [":dispatch_for_proj"]
 }
 
+
+action("dispatch_for_proj") {
+    arg = [
+        "--kernel", rebase_path("//"),
+        "--outpath", rebase_path("//out/ffapi-study"),
+        "--cachepath", rebase_path("$root_out_dir"),
+    ]
+
+    if (is_debug) {
+        arg += [ "--buildmode", "Debug" ]
+    } else {
+        arg += [ "--buildmode", "Release" ]
+    }
+
+    if (is_mac) {
+        arg += ["--platform", "mac"]
+    } else if (is_win) {
+        arg += ["--platform", "win"]
+    }
+
+    arg += ["--targetcpu", "${target_cpu}"]
+    
+    script = "//dispatch_for_ide.py"
+    outputs = ["$root_out_dir/ffapi-study.ouput"]
+    args = arg
+    deps = []
+}
