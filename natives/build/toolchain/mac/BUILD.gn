@@ -1,12 +1,40 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
-default_clang_base_path = "D:/Program Files/LLVM"
+# TODO(brettw) Use "gcc_toolchain.gni" like the Linux toolchains. This requires
+# some enhancements since the commands on Mac are slightly different than on
+# Linux.
+
+import("//build/config/mac/mac_sdk.gni")
+import("//build/config/mac/symbols.gni")
+
+assert(host_os == "mac")
+
+import("//build/toolchain/concurrent_links.gni")
+#import("//build/toolchain/toolchain.gni")
 
 declare_args() {
-  clang_base_path = default_clang_base_path
+  clang_base_path = ""
 
-  use_xcode_clang = true
+  # Reduce the number of tasks using the copy_bundle_data and compile_xcassets
+  # tools as they can cause lots of I/O contention when invoking ninja with a
+  # large number of parallel jobs (e.g. when using distributed build like goma).
+  bundle_pool_depth = -1
+
+  # Set to "ccache", "icecc" or "distcc".  Probably doesn't work on windows.
+  cc_wrapper = ""
 }
 
+if (current_toolchain == default_toolchain) {
+  pool("bundle_pool") {
+    if (bundle_pool_depth == -1) {
+      depth = concurrent_links
+    } else {
+      depth = bundle_pool_depth
+    }
+  }
+}
 
 # When implementing tools using Python scripts, a TOOL_VERSION=N env
 # variable is placed in front of the command. The N should be incremented
@@ -81,25 +109,6 @@ template("mac_toolchain") {
     # Set the explicit search path for clang++ so it uses the right linker
     # binary.
     ld += " -B " + mac_bin_path
-
-    if (defined(toolchain_args.coverage_instrumentation_input_file)) {
-      toolchain_coverage_instrumentation_input_file =
-          toolchain_args.coverage_instrumentation_input_file
-    } else {
-      toolchain_coverage_instrumentation_input_file =
-          coverage_instrumentation_input_file
-    }
-    _use_clang_coverage_wrapper =
-        toolchain_coverage_instrumentation_input_file != ""
-    if (_use_clang_coverage_wrapper) {
-      _coverage_wrapper =
-          rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
-                      root_build_dir) + " --files-to-instrument=" +
-          rebase_path(toolchain_coverage_instrumentation_input_file,
-                      root_build_dir)
-      cc = _coverage_wrapper + " ${cc}"
-      cxx = _coverage_wrapper + " ${cxx}"
-    }
 
     linker_driver =
         "TOOL_VERSION=${tool_versions.linker_driver} " +
@@ -412,11 +421,11 @@ template("mac_toolchain") {
                 _copydir + "; else " + copy_command + "; fi"
 
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
-      #pool = ":bundle_pool($default_toolchain)"
+      pool = ":bundle_pool($default_toolchain)"
     }
 
     tool("action") {
-      #pool = "//build/toolchain:action_pool($default_toolchain)"
+      pool = "//build/toolchain:action_pool($default_toolchain)"
     }
   }
 }
