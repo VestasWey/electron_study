@@ -3,14 +3,7 @@ template("library") {
     assert(defined(invoker.sources),
            "Need sources in $target_name listing the source files.")
 
-    type = "static_library"
-    if (is_win) {
-        type = "shared_library"
-    } 
-
-    if (is_mac) {
-        type = "source_set"
-    }
+    type = "shared_library"
 
     target(type, target_name) {
         configs += [ 
@@ -30,9 +23,6 @@ template("library") {
         lib_dirs = [ 
             rebase_path("$output_dir/libs"),
         ]
-        if (type == "static_library") {
-            output_dir += "/libs"
-        }
 
         if (defined(invoker.deps)) {
             if (defined(deps)) {

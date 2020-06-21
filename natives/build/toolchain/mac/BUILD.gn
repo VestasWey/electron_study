@@ -71,7 +71,7 @@ template("mac_toolchain") {
       # needs to be passed through unchanged to all secondary toolchains to
       # ensure that it's always the same, regardless of the values that may be
       # set on those toolchains.
-      host_toolchain = host_toolchain
+      #host_toolchain = host_toolchain
     }
 
     # Supports building with the version of clang shipped with Xcode when
@@ -118,9 +118,9 @@ template("mac_toolchain") {
     _strippath = mac_bin_path + "strip"
     linker_driver += " -Wcrl,strippath," + _strippath
 
-    if (mac_deterministic_build) {
-      linker_driver += " --deterministic"
-    }
+    #if (mac_deterministic_build) {
+    #  linker_driver += " --deterministic"
+    #}
 
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script
@@ -145,11 +145,11 @@ template("mac_toolchain") {
     # If dSYMs are enabled, this flag will be added to the link tools.
     if (_enable_dsyms) {
       dsym_switch = " -Wcrl,dsym,{{root_out_dir}} "
-      if (is_mac) {
-        dsym_switch += "-Wcrl,dsymutilpath," +
-                       rebase_path("//tools/clang/dsymutil/bin/dsymutil",
-                                   root_build_dir) + " "
-      }
+      #if (is_mac) {
+      #  dsym_switch += "-Wcrl,dsymutilpath," +
+      #                 rebase_path("//tools/clang/dsymutil/bin/dsymutil",
+      #                             root_build_dir) + " "
+      #}
 
       dsym_output_dir =
           "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM"
@@ -384,17 +384,20 @@ template("mac_toolchain") {
       default_output_dir = "{{root_out_dir}}"
     }
 
+    copy_command = ""
+    #copy_description = "copy_description"
     # These two are really entirely generic, but have to be repeated in
     # each toolchain because GN doesn't allow a template to be used here.
     # See //build/toolchain/toolchain.gni for details.
     tool("stamp") {
-      command = stamp_command
-      description = stamp_description
+      command = "touch {{output}}"
+      description = "stamp {{output}}"
     }
-    tool("copy") {
-      command = copy_command
-      description = copy_description
-    }
+
+    #tool("copy") {
+    #  command = copy_command
+    #  description = copy_description
+    #}
 
     tool("copy_bundle_data") {
       # copy_command use hardlink if possible but this does not work with
@@ -421,12 +424,12 @@ template("mac_toolchain") {
                 _copydir + "; else " + copy_command + "; fi"
 
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
-      pool = ":bundle_pool($default_toolchain)"
+      #pool = ":bundle_pool($default_toolchain)"
     }
 
-    tool("action") {
-      pool = "//build/toolchain:action_pool($default_toolchain)"
-    }
+    #tool("action") {
+    #  pool = "//build/toolchain:action_pool($default_toolchain)"
+    #}
   }
 }
 

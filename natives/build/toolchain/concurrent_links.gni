@@ -7,8 +7,8 @@
 # in the context of the default_toolchain, so we can at least check for that.
 assert(current_toolchain == default_toolchain)
 
-import("//build/config/sanitizers/sanitizers.gni")
-import("//build/toolchain/toolchain.gni")
+#import("//build/config/sanitizers/sanitizers.gni")
+#import("//build/toolchain/toolchain.gni")
 
 declare_args() {
   # Limit the number of concurrent links; we often want to run fewer
@@ -29,11 +29,7 @@ declare_args() {
 }
 
 if (concurrent_links == -1) {
-  if (use_sanitizer_coverage || use_fuzzing_engine) {
-    # Sanitizer coverage instrumentation increases linker memory consumption
-    # significantly.
-    _args = [ "--mem_per_link_gb=16" ]
-  } else if (is_win && symbol_level == 1 && !is_debug && is_component_build) {
+  if (is_win && symbol_level == 1 && !is_debug && is_component_build) {
     _args = [ "--mem_per_link_gb=3" ]
   } else if (is_win) {
     _args = [ "--mem_per_link_gb=5" ]

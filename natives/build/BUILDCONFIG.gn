@@ -9,6 +9,7 @@
 
 declare_args() {
   is_official_build = false
+  is_component_build = false
 
   sanitize = ""
   fyi_sanitize = ""

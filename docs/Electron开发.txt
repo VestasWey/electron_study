@@ -80,7 +80,10 @@
     那么下好后直接把下好的.7z包解压放置到“%localappdata%\electron\Cache\winCodeSign\winCodeSign-2.6.0”中
 
     To ensure your native dependencies are always matched electron version, simply add script `"postinstall": "electron-builder install-app-deps" to your `package.json`
-    
+
+11、换机器之后按package.json的配置安装模块
+    ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/ npm install --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
+
     
 ffi-napi与c++
 'string'    char*
