@@ -20,6 +20,7 @@ import subprocess
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+import gn_helpers
 
 SCRIPT_DIR = os.path.dirname(__file__)
 
@@ -90,7 +91,7 @@ def _LoadEnvFromBat(args):
   return variables.decode(errors='ignore')
 
 
-def _LoadToolchainEnv(cpu, winsdk, sdk_dir, target_store):
+def _LoadToolchainEnv(cpu, sdk_dir, target_store):
   """Returns a dictionary with environment variables that must be set while
   running binaries from the toolchain (e.g. INCLUDE and PATH for cl.exe)."""
   # Check if we are running in the SDK command line environment and use
@@ -152,7 +153,7 @@ def _LoadToolchainEnv(cpu, winsdk, sdk_dir, target_store):
     if (cpu != 'x64'):
       # x64 is default target CPU thus any other CPU requires a target set
       cpu_arg += '_' + cpu
-    args = [script_path, cpu_arg, winsdk]
+    args = [script_path, cpu_arg]
     # Store target must come before any SDK version declaration
     if (target_store):
       args.append(['store'])
@@ -188,13 +189,13 @@ def main():
   if len(sys.argv) != 7:
     print('Usage setup_toolchain.py '
           '<visual studio path> <win sdk path> '
-          '<target_os> <target_cpu> <win sdk version>'
+          '<runtime dirs> <target_os> <target_cpu> '
           '<environment block name|none>')
     sys.exit(2)
   win_sdk_path = sys.argv[2]
-  target_os = sys.argv[3]
-  target_cpu = sys.argv[4]
-  winsdk = sys.argv[5]
+  runtime_dirs = sys.argv[3]
+  target_os = sys.argv[4]
+  target_cpu = sys.argv[5]
   environment_block_name = sys.argv[6]
   if (environment_block_name == 'none'):
     environment_block_name = ''
@@ -219,7 +220,8 @@ def main():
   for cpu in cpus:
     if cpu == target_cpu:
       # Extract environment variables for subprocesses.
-      env = _LoadToolchainEnv(cpu, winsdk, win_sdk_path, target_store)
+      env = _LoadToolchainEnv(cpu, win_sdk_path, target_store)
+      env['PATH'] = runtime_dirs + os.pathsep + env['PATH']
 
       for path in env['PATH'].split(os.pathsep):
         if os.path.exists(os.path.join(path, 'cl.exe')):
@@ -269,7 +271,6 @@ def main():
         with open(environment_block_name, 'w') as f:
           f.write(env_block)
 
-  import gn_helpers
   assert vc_bin_dir
   print('vc_bin_dir = ' + gn_helpers.ToGNString(vc_bin_dir))
   assert include_I
@@ -294,14 +295,4 @@ def main():
 
 
 if __name__ == '__main__':
-
-  # test[
-  #sys.argv.append("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC")  # IDE path
-  #sys.argv.append("C:\\Program Files (x86)\\Windows Kits\\10")  # win SDK path
-  #sys.argv.append("win")  # platform
-  #sys.argv.append("x86")  # cpu arch
-  #sys.argv.append("10.0.17763.0") # win sdk version
-  #sys.argv.append("")
-  # ]
-
   main()

@@ -7,8 +7,9 @@
 # in the context of the default_toolchain, so we can at least check for that.
 assert(current_toolchain == default_toolchain)
 
-#import("//build/config/sanitizers/sanitizers.gni")
-#import("//build/toolchain/toolchain.gni")
+import("//build/config/compiler/compiler.gni")
+import("//build/config/sanitizers/sanitizers.gni")
+import("//build/toolchain/toolchain.gni")
 
 declare_args() {
   # Limit the number of concurrent links; we often want to run fewer
@@ -16,25 +17,40 @@ declare_args() {
   # The default to use varies by platform and by the amount of memory
   # available, so we call out to a script to get the right value.
   concurrent_links = -1
-
-  # How many symbols to include in the build. This affects the performance of
-  # the build since the symbols are large and dealing with them is slow.
-  #   2 means regular build with symbols.
-  #   1 means minimal symbols, usually enough for backtraces only. Symbols with
-  # internal linkage (static functions or those in anonymous namespaces) may not
-  # appear when using this level.
-  #   0 means no symbols.
-  #   -1 means auto-set according to debug/release and platform.
-  symbol_level = -1
 }
 
 if (concurrent_links == -1) {
-  if (is_win && symbol_level == 1 && !is_debug && is_component_build) {
+  if (use_thin_lto) {
+    _args = [ "--reserve_mem_gb=10" ]
+    if (is_win) {
+      # Based on measurements of linking chrome.dll and chrome_child.dll, plus
+      # a little padding to account for future growth.
+      _args += [ "--mem_per_link_gb=45" ]
+    } else {
+      _args += [ "--mem_per_link_gb=10" ]
+    }
+  } else if (use_sanitizer_coverage || use_fuzzing_engine) {
+    # Sanitizer coverage instrumentation increases linker memory consumption
+    # significantly.
+    _args = [ "--mem_per_link_gb=16" ]
+  } else if (is_win && symbol_level == 1 && !is_debug && is_component_build) {
     _args = [ "--mem_per_link_gb=3" ]
   } else if (is_win) {
     _args = [ "--mem_per_link_gb=5" ]
   } else if (is_mac) {
     _args = [ "--mem_per_link_gb=4" ]
+  } else if (is_android && !is_component_build && symbol_level == 2) {
+    # Full debug symbols require large memory for link.
+    _args = [ "--mem_per_link_gb=25" ]
+  } else if (is_android && !is_debug && !using_sanitizer && symbol_level < 2) {
+    # Increase the number of concurrent links for release bots. Debug builds
+    # make heavier use of ProGuard, and so should not be raised. Sanitizers also
+    # increase the memory overhead.
+    if (symbol_level == 1) {
+      _args = [ "--mem_per_link_gb=6" ]
+    } else {
+      _args = [ "--mem_per_link_gb=4" ]
+    }
   } else if (is_linux && !is_chromeos && symbol_level == 0) {
     # Memory consumption on link without debug symbols is low on linux.
     _args = [ "--mem_per_link_gb=3" ]

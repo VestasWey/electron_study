@@ -67,15 +67,24 @@ _DEFAULT_COVERAGE_EXCLUSION_LIST = []
 _COVERAGE_EXCLUSION_LIST_MAP = {
     'android': [
         # This file caused webview native library failed on arm64.
+        '../../device/gamepad/dualshock4_controller.cc',
     ],
     'linux': [
         # These files caused a static initializer to be generated, which
         # shouldn't.
         # TODO(crbug.com/990948): Remove when the bug is fixed.
+        '../../chrome/browser/media/router/providers/cast/cast_internal_message_util.cc',  #pylint: disable=line-too-long
+        '../../chrome/common/media_router/providers/cast/cast_media_source.cc',
+        '../../components/cast_channel/cast_channel_enum.cc',
+        '../../components/cast_channel/cast_message_util.cc',
     ],
     'chromeos': [
         # These files caused clang to crash while compiling them. They are
         # excluded pending an investigation into the underlying compiler bug.
+        '../../third_party/webrtc/p2p/base/p2p_transport_channel.cc',
+        '../../third_party/icu/source/common/uts46.cpp',
+        '../../third_party/icu/source/common/ucnvmbcs.cpp',
+        '../../base/android/android_image_reader_compat.cc',
     ],
     'win': [],
 }

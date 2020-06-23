@@ -6,24 +6,33 @@
 # some enhancements since the commands on Mac are slightly different than on
 # Linux.
 
+import("//build/config/clang/clang.gni")
+import("//build/config/coverage/coverage.gni")
+import("../goma.gni")
+if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+}
 import("//build/config/mac/mac_sdk.gni")
 import("//build/config/mac/symbols.gni")
 
 assert(host_os == "mac")
 
+import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/concurrent_links.gni")
-#import("//build/toolchain/toolchain.gni")
+import("//build/toolchain/goma.gni")
+import("//build/toolchain/toolchain.gni")
 
 declare_args() {
-  clang_base_path = ""
-
   # Reduce the number of tasks using the copy_bundle_data and compile_xcassets
   # tools as they can cause lots of I/O contention when invoking ninja with a
   # large number of parallel jobs (e.g. when using distributed build like goma).
   bundle_pool_depth = -1
 
-  # Set to "ccache", "icecc" or "distcc".  Probably doesn't work on windows.
-  cc_wrapper = ""
+  # This makes the linker set timestamps in Mach-O files to 0. This isn't
+  # enabled by default because this breaks Xcode's lldb. This has been fixed in
+  # https://reviews.llvm.org/rL368199 but that has not yet made it into a public
+  # lldb release.
+  mac_deterministic_build = false
 }
 
 if (current_toolchain == default_toolchain) {
@@ -49,8 +58,9 @@ if (current_toolchain == default_toolchain) {
 tool_versions =
     exec_script("get_tool_mtime.py",
                 rebase_path([
-                              "filter_libtool.py",
-                              "linker_driver.py",
+                              "//build/config/ios/compile_xcassets.py",
+                              "//build/toolchain/mac/filter_libtool.py",
+                              "//build/toolchain/mac/linker_driver.py",
                             ],
                             root_build_dir),
                 "trim scope")
@@ -71,12 +81,12 @@ template("mac_toolchain") {
       # needs to be passed through unchanged to all secondary toolchains to
       # ensure that it's always the same, regardless of the values that may be
       # set on those toolchains.
-      #host_toolchain = host_toolchain
+      host_toolchain = host_toolchain
     }
 
     # Supports building with the version of clang shipped with Xcode when
     # targeting iOS by not respecting clang_base_path.
-    if (use_xcode_clang) {
+    if (toolchain_args.current_os == "ios" && use_xcode_clang) {
       prefix = ""
     } else {
       prefix = rebase_path("$clang_base_path/bin/", root_build_dir)
@@ -89,6 +99,11 @@ template("mac_toolchain") {
     # toolchain args, use those values, otherwise default to the global one.
     # This works because the only reasonable override that toolchains might
     # supply for these values are to force-disable them.
+    if (defined(toolchain_args.use_goma)) {
+      toolchain_uses_goma = toolchain_args.use_goma
+    } else {
+      toolchain_uses_goma = use_goma
+    }
     if (defined(toolchain_args.cc_wrapper)) {
       toolchain_cc_wrapper = toolchain_args.cc_wrapper
     } else {
@@ -96,7 +111,11 @@ template("mac_toolchain") {
     }
 
     # Compute the compiler prefix.
-    if (toolchain_cc_wrapper != "") {
+    if (toolchain_uses_goma) {
+      assert(toolchain_cc_wrapper == "",
+             "Goma and cc_wrapper can't be used together.")
+      compiler_prefix = "$goma_dir/gomacc "
+    } else if (toolchain_cc_wrapper != "") {
       compiler_prefix = toolchain_cc_wrapper + " "
     } else {
       compiler_prefix = ""
@@ -110,6 +129,25 @@ template("mac_toolchain") {
     # binary.
     ld += " -B " + mac_bin_path
 
+    if (defined(toolchain_args.coverage_instrumentation_input_file)) {
+      toolchain_coverage_instrumentation_input_file =
+          toolchain_args.coverage_instrumentation_input_file
+    } else {
+      toolchain_coverage_instrumentation_input_file =
+          coverage_instrumentation_input_file
+    }
+    _use_clang_coverage_wrapper =
+        toolchain_coverage_instrumentation_input_file != ""
+    if (_use_clang_coverage_wrapper) {
+      _coverage_wrapper =
+          rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
+                      root_build_dir) + " --files-to-instrument=" +
+          rebase_path(toolchain_coverage_instrumentation_input_file,
+                      root_build_dir)
+      cc = _coverage_wrapper + " ${cc}"
+      cxx = _coverage_wrapper + " ${cxx}"
+    }
+
     linker_driver =
         "TOOL_VERSION=${tool_versions.linker_driver} " +
         rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
@@ -118,9 +156,9 @@ template("mac_toolchain") {
     _strippath = mac_bin_path + "strip"
     linker_driver += " -Wcrl,strippath," + _strippath
 
-    #if (mac_deterministic_build) {
-    #  linker_driver += " --deterministic"
-    #}
+    if (mac_deterministic_build) {
+      linker_driver += " --deterministic"
+    }
 
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script
@@ -145,11 +183,11 @@ template("mac_toolchain") {
     # If dSYMs are enabled, this flag will be added to the link tools.
     if (_enable_dsyms) {
       dsym_switch = " -Wcrl,dsym,{{root_out_dir}} "
-      #if (is_mac) {
-      #  dsym_switch += "-Wcrl,dsymutilpath," +
-      #                 rebase_path("//tools/clang/dsymutil/bin/dsymutil",
-      #                             root_build_dir) + " "
-      #}
+      if (is_mac) {
+        dsym_switch += "-Wcrl,dsymutilpath," +
+                       rebase_path("//tools/clang/dsymutil/bin/dsymutil",
+                                   root_build_dir) + " "
+      }
 
       dsym_output_dir =
           "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM"
@@ -251,7 +289,7 @@ template("mac_toolchain") {
     tool("solink") {
       dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
       rspfile = dylib + ".rsp"
-      #pool = "//build/toolchain:link_pool($default_toolchain)"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       # These variables are not built into GN but are helpers that implement
       # (1) linking to produce a .dylib, (2) extracting the symbols from that
@@ -322,7 +360,7 @@ template("mac_toolchain") {
     tool("solink_module") {
       sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
       rspfile = sofile + ".rsp"
-      #pool = "//build/toolchain:link_pool($default_toolchain)"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       link_command = "$linker_driver $ld -bundle {{ldflags}} -o \"$sofile\" -Wl,-filelist,\"$rspfile\""
       if (is_component_build) {
@@ -357,7 +395,7 @@ template("mac_toolchain") {
     tool("link") {
       outfile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
-      #pool = "//build/toolchain:link_pool($default_toolchain)"
+      pool = "//build/toolchain:link_pool($default_toolchain)"
 
       # Note about -filelist: Apple's linker reads the file list file and
       # interprets each newline-separated chunk of text as a file name. It
@@ -384,20 +422,17 @@ template("mac_toolchain") {
       default_output_dir = "{{root_out_dir}}"
     }
 
-    copy_command = ""
-    #copy_description = "copy_description"
     # These two are really entirely generic, but have to be repeated in
     # each toolchain because GN doesn't allow a template to be used here.
     # See //build/toolchain/toolchain.gni for details.
     tool("stamp") {
-      command = "touch {{output}}"
-      description = "stamp {{output}}"
+      command = stamp_command
+      description = stamp_description
     }
-
-    #tool("copy") {
-    #  command = copy_command
-    #  description = copy_description
-    #}
+    tool("copy") {
+      command = copy_command
+      description = copy_description
+    }
 
     tool("copy_bundle_data") {
       # copy_command use hardlink if possible but this does not work with
@@ -424,12 +459,40 @@ template("mac_toolchain") {
                 _copydir + "; else " + copy_command + "; fi"
 
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
-      #pool = ":bundle_pool($default_toolchain)"
+      pool = ":bundle_pool($default_toolchain)"
     }
 
-    #tool("action") {
-    #  pool = "//build/toolchain:action_pool($default_toolchain)"
-    #}
+    # xcassets are only used on iOS, not macOS. We want to minimize the number
+    # of Xcode-based tools used by the macOS toolchain, so we intentionally
+    # disallow future uses of xcassets on macOS. https://crbug.com/965663.
+    if (toolchain_args.current_os == "ios") {
+      tool("compile_xcassets") {
+        _tool = rebase_path("//build/config/ios/compile_xcassets.py",
+                            root_build_dir)
+        if (is_ios) {
+          _sdk_name = ios_sdk_name
+          _min_deployment_target = ios_deployment_target
+          _compress_pngs = ""
+        } else {
+          _sdk_name = mac_sdk_name
+          _min_deployment_target = mac_deployment_target
+          _compress_pngs = " -c "
+        }
+        command =
+            "rm -f \"{{output}}\" && " +
+            "TOOL_VERSION=${tool_versions.compile_xcassets} " +
+            "python $_tool$_compress_pngs -p \"$_sdk_name\" " +
+            "-t \"$_min_deployment_target\" -T \"{{bundle_product_type}}\" " +
+            "-P \"{{bundle_partial_info_plist}}\" -o {{output}} {{inputs}}"
+
+        description = "COMPILE_XCASSETS {{output}}"
+        pool = ":bundle_pool($default_toolchain)"
+      }
+    }
+
+    tool("action") {
+      pool = "//build/toolchain:action_pool($default_toolchain)"
+    }
   }
 }
 
@@ -444,6 +507,13 @@ mac_toolchain("clang_x64") {
   toolchain_args = {
     current_cpu = "x64"
     current_os = "mac"
+
+    if (target_os == "ios") {
+      # TODO(crbug.com/753445): the use_sanitizer_coverage arg is currently
+      # not supported by the Chromium mac_clang_x64 toolchain on iOS
+      # distribution.
+      use_sanitizer_coverage = false
+    }
   }
 }
 
@@ -494,6 +564,36 @@ mac_toolchain("clang_x64_v8_mips64el") {
 
     if (defined(v8_current_cpu)) {
       v8_current_cpu = "mips64el"
+    }
+  }
+}
+
+if (is_ios) {
+  mac_toolchain("ios_clang_arm") {
+    toolchain_args = {
+      current_cpu = "arm"
+      current_os = "ios"
+    }
+  }
+
+  mac_toolchain("ios_clang_arm64") {
+    toolchain_args = {
+      current_cpu = "arm64"
+      current_os = "ios"
+    }
+  }
+
+  mac_toolchain("ios_clang_x86") {
+    toolchain_args = {
+      current_cpu = "x86"
+      current_os = "ios"
+    }
+  }
+
+  mac_toolchain("ios_clang_x64") {
+    toolchain_args = {
+      current_cpu = "x64"
+      current_os = "ios"
     }
   }
 }

@@ -1,0 +1,38 @@
+//.gn
+crashpad_dependencies = "chromium"
+
+//BUILD.gn
+root_extra_deps = []
+
+//build/config/BUILDCONFIG.gn
+is_official_build = false
+is_desktop_linux = current_os == "linux"
+is_clang = current_os != "linux" ||
+             (current_cpu != "s390x" && current_cpu != "s390" &&
+              current_cpu != "ppc64" && current_cpu != "ppc" &&
+              current_cpu != "mips" && current_cpu != "mips64")
+custom_toolchain = ""
+host_toolchain = ""
+is_debug = !is_official_build
+is_component_build = is_debug && current_os != "ios"
+
+//build_overrides/build.gni
+import("//build/config/gclient_args.gni")
+enable_java_templates = true
+linux_use_bundled_binutils_override = true
+
+ignore_elf32_limitations = false
+use_system_xcode = true
+
+//build/config/gclient_args.gni
+build_with_chromium = true
+checkout_android = false
+checkout_android_native_support = false
+checkout_ios_webkit = false
+checkout_nacl = true
+checkout_oculus_sdk = false
+checkout_openxr = true
+checkout_aemu = false
+
+//buildtools/deps_revisions.gni
+libcxx_svn_revision = "361348"

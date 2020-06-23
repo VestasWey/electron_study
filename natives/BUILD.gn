@@ -1,152 +1,118 @@
-import("//library_template.gni")
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
-# 定义当前是否是测试模式
+# This is the root build file for GN. GN will start processing by loading this
+# file, and recursively load all dependencies until all dependencies are either
+# resolved or known not to exist (which will cause the build to fail). So if
+# you add a new build file, there must be some path of dependencies from this
+# file to your new one or GN won't know about it.
+
+import("//build/config/compiler/compiler.gni")
+import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/ui.gni")
+import("//build/util/generate_wrapper.gni")
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
+
 declare_args() {
-    is_test = false
+  # A list of extra dependencies to add to the root target. This allows a
+  # checkout to add additional targets without explicitly changing any checked-
+  # in files.
+  root_extra_deps = []
 }
 
-# 工程模块
-projects = [
+if (is_official_build) {
+  # An official (maximally optimized!) component (optimized for build times)
+  # build doesn't make sense and usually doesn't work.
+  assert(!is_component_build)
+}
+
+# This file defines the following two main targets:
+#
+# "gn_all" is used to create explicit dependencies from the root BUILD.gn to
+# each top-level component that we wish to include when building everything via
+# "all". This is required since the set of targets built by "all" is determined
+# automatically based on reachability from the root BUILD.gn (for details, see
+# crbug.com/503241). Builders should typically use "all", or list targets
+# explicitly, rather than relying on "gn_all".
+#
+# "gn_visibility": targets that are normally not visible to top-level targets,
+# but are built anyway by "all". Since we don't want any such targets, we have
+# this placeholder to make sure hidden targets that aren't otherwise depended
+# on yet are accounted for.
+
+group("gn_all") {
+  testonly = true
+
+  deps = [
+    # Vestas[
     "//modules:ffapi_study",
-]
+    #]
+  ]
 
-# 过滤各平台相关代码实现
-if (is_win) {
-    set_sources_assignment_filter([ 
-        "*_posix.h", "*_posix.cc",
-        "*_mac.h", "*_mac.cc", "*_mac.mm",
-        "*_android.h", "*_android.cc",
-        "*_jni.h", "*_jni.cc",
-    ])
-} 
-if (is_mac) {
-    set_sources_assignment_filter([ 
-        "*_win.cc", "*_win.h", 
-        "*_posix.h", "*_posix.cc",
-        "*_android.h", "*_android.cc",
-        "*_jni.h", "*_jni.cc",
-    ])
-} 
-if (is_linux) {
-    set_sources_assignment_filter([ 
-        "*_win.cc", "*_win.h",
-        "*_mac.h", "*_mac.cc", "*_mac.mm",
-        "*_android.h", "*_android.cc",
-        "*_jni.h", "*_jni.cc",
-    ])
+  if (is_win) {
+    #deps += [ "//chrome/credential_provider" ]
+  }
+
+  if (is_mac) {
+    #deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
+  }
 }
 
-# 组装工程和编译后执行动作
-if (!is_test) {
-    group("ccore"){
-        deps = projects
-        #deps += [ "//:dispatch_for_ide" ]
-    }
-} else {
-    executable("test") {
-        if (defined(configs)) {
-            configs += [ ":common_config" ]
-        } else {
-            configs = [ ":common_config" ]
-        }
-        
-        deps = [
-            "//modules:ffapi_study",
-        ]
+if (!is_ios) {
 
-        sources = [
-            "//test.cpp",
-        ]
-
-        if (is_mac) {
-            libs = [ "Foundation.framework" ]
-        }
-        
-
-        output_dir = "$root_out_dir"
-    }
+  # This target contains only a small subset of the web tests,
+  # and is useful for testing with the regular isolate mechanism.
+  # To run the full web test suite you need to use
+  # :blink_web_tests_exparchive, above, instead.
+  #generate_wrapper("blink_web_tests") {
+  #  testonly = true
+  #  wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"
+  #  executable = "//third_party/blink/tools/run_web_tests.py"
+  #  executable_args = []
+  #
+  #  if (is_debug) {
+  #    executable_args += [ "--debug" ]
+  #  } else {
+  #    executable_args += [ "--release" ]
+  #  }
+  #
+  #  data_deps = [
+  #    ":layout_test_data_mojo_bindings",
+  #  ]
+  #
+  #  data = [
+  #    "//testing/scripts/common.py",
+  #  ]
+  #}
 }
 
-# 工程配置
-config("common_config") {
-    
-    cflags_cc = []
-    include_dirs = [
-        "//",
-    ]
-
-    if (!is_win) {
-        cflags_cc += [
-            "-fexceptions", 
-            "-Wno-unknown-pragmas", 
-            "-Wno-parentheses-equality", 
-            "-Wno-pragmas", 
-            "-Wno-unused-private-field",
-        ]    
-    } 
-
-    if (is_mac) {
-        defines = [
-            "CCORE_MAC",
-        ]
-    }
-
-    if (is_win) {
-        defines = [
-            "_UNICODE",
-            "UNICODE",
-            "WIN32",
-            "_WINDOWS",
-        ]
-        cflags_cc += ["/W3", "/EHsc"]
-        if (is_debug) {
-            cflags_cc += ["/MTd"]
-        } else {
-            cflags_cc += ["/MT"]
-        }
-    }
-
-    if (is_linux) {
-        defines = [
-            "CCORE_LINUX",
-        ]
-    }
-
-    defines += [
-        "AGORA_2_0",
-    ]
-
-    if (is_debug) {
-        defines += [ "DEBUG", ]
-    } else {
-        defines += [ "NDEBUG", ]
-    }
+# Because of the source assignment filter, many targets end up over-filtering
+# their sources if the output directory contains a platform name. Assert that
+# this doesn't happen. http://crbug.com/548283
+template("assert_valid_out_dir") {
+  # List copied from //build/config/BUILDCONFIG.gn.
+  set_sources_assignment_filter([
+                                  "*\bandroid/*",
+                                  "*\bchromeos/*",
+                                  "*\bcocoa/*",
+                                  "*\bios/*",
+                                  "*\blinux/*",
+                                  "*\bmac/*",
+                                  "*\bposix/*",
+                                  "*\bwin/*",
+                                ])
+  assert(target_name != "")  # Mark as used.
+  sources = invoker.actual_sources
+  assert(
+      sources == invoker.actual_sources,
+      "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
 }
 
-# 编译完成后执行动作o
-action("dispatch_for_ide") {
-    arg = [
-        "--kernel", rebase_path("//"),
-        "--outpath", rebase_path("//out/publishes"),
-        "--cachepath", rebase_path("$root_out_dir"),
-    ]
-
-    if (is_debug) {
-        arg += [ "--buildmode", "Debug" ]
-    } else {
-        arg += [ "--buildmode", "Release" ]
-    }
-
-    if (is_mac) {
-        arg += ["--platform", "mac"]
-    } else if (is_win) {
-        arg += ["--platform", "win"]
-    }
-
-    arg += ["--targetcpu", "${target_cpu}"]
-    
-    script = "dispatch_for_ide.py"
-    outputs = [ "$root_out_dir/libccore_gn.a" ]
-    args = arg
-    deps = projects
+assert_valid_out_dir("_unused") {
+  actual_sources = [ "$root_build_dir/foo" ]
 }

@@ -83,6 +83,7 @@
 
 11、换机器之后按package.json的配置安装模块
     ELECTRON_MIRROR=https://npm.taobao.org/mirrors/electron/ npm install --platform=darwin --unsafe-perm=true --allow-root --save-dev --verbose
+    npm install --platform=win32 --arch=ia32 --save-dev --verbose
 
     
 ffi-napi与c++
