@@ -12,3 +12,6 @@ https://www.cnblogs.com/bigben0123/p/12626844.html
 编译
 "build/bin/win/ninja" -j 8 -C out/debug ffapi_study
 "build/bin/mac/ninja" -j 8 -C out/debug ffapi_study
+
+python相关
+部分python脚本需要安装诸如pywin32模块，可以到淘宝镜像上手动下载.whl文件，然后到Python27的安装目录中的Scripts去执行“pip install xxx.whl”

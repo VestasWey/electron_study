@@ -4,7 +4,6 @@
 #
 # Defines the build_timestamp variable.
 
-import("//build/util/lastchange.gni")
 
 declare_args() {
   # This should be the filename of a script that prints a single line
@@ -28,7 +27,9 @@ if (is_official_build) {
 # changes to keep this up to date.  (Bots run gn on each build, and for devs
 # the timestamp being 100% accurate doesn't matter.)
 # See compute_build_timestamp.py for tradeoffs for picking the timestamp.
-build_timestamp = exec_script(compute_build_timestamp,
-                              [ official_name ],
-                              "trim string",
-                              [ lastchange_file ])
+#build_timestamp = exec_script(compute_build_timestamp,
+#                              [ official_name ],
+#                              "trim string",
+#                              [ lastchange_file ])
+# 过后可以按照chromium的方式通过在//build/util生成LASTCHANGE.committime文件来指定构建时间戳
+#build_timestamp = 1572887300

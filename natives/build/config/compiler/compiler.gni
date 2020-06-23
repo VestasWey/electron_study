@@ -8,8 +8,6 @@ import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-#import("//build_overrides/build.gni")
-import("//build/config/gclient_args.gni")
 
 if (is_chromeos) {
   import("//build/config/chromeos/rules.gni")
@@ -87,7 +85,7 @@ declare_args() {
   # Whether an error should be raised on attempts to make debug builds with
   # is_component_build=false. Very large debug symbols can have unwanted side
   # effects so this is enforced by default for chromium.
-  forbid_non_component_debug_builds = build_with_chromium
+  forbid_non_component_debug_builds = false
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
