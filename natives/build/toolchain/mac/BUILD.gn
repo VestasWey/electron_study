@@ -92,6 +92,13 @@ template("mac_toolchain") {
       prefix = rebase_path("$clang_base_path/bin/", root_build_dir)
     }
 
+    # mac下就用xcode自己的clang，不按照chromium的做法自己带一套clang全平台共用[
+    if(is_mac && use_system_xcode && use_xcode_clang)
+    {
+      prefix = ""
+    }
+    # ]
+
     _cc = "${prefix}clang"
     _cxx = "${prefix}clang++"
 

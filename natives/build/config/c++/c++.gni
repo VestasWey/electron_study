@@ -34,6 +34,10 @@ use_custom_libcxx =
     use_custom_libcxx || (use_custom_libcxx_for_host && current_cpu == host_cpu)
 use_custom_libcxx = use_custom_libcxx && !is_nacl
 
+# 刚开始就不要搞交叉编译了，玩脱了[
+use_custom_libcxx = false
+# ]
+
 declare_args() {
   # WARNING: Setting this to a non-default value is highly discouraged.
   # If true, libc++ will be built as a shared library; otherwise libc++ will be

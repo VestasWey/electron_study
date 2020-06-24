@@ -1537,6 +1537,17 @@ config("default_warnings") {
           "-Wno-sizeof-array-div",
         ]
 
+        # 不使用chromium的这三个编译选项[
+        if (use_xcode_clang)
+        {
+          cflags -= [
+            "-Wno-c99-designator",
+            "-Wno-final-dtor-non-final-class",
+            "-Wno-sizeof-array-div",
+          ]
+        }
+        # ]
+
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",

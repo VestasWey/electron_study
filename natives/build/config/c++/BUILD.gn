@@ -1,6 +1,5 @@
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
-#import("//buildtools/deps_revisions.gni")
 
 assert(use_custom_libcxx, "should only be used if use_custom_libcxx is set")
 

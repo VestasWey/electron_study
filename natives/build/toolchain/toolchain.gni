@@ -41,11 +41,13 @@ declare_args() {
   # ]
 }
 
-if(target_os == "mac")
+# mac下就用xcode自己的clang，不按照chromium的做法自己带一套clang全平台共用[
+if (target_os == "mac")
 {
   use_xcode_clang = true
   use_system_xcode = true
 }
+# ]
 
 if (generate_linker_map) {
   assert(
