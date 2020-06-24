@@ -9,13 +9,18 @@ shared_library("ffapi_study")
         ]
 
     #deps = [":dispatch_for_proj"]
+    #deps = [":mydll"]
 }
 
+copy("mydll") {
+    sources = [ "mydll.dll" ]
+    outputs = [ "$root_out_dir/copy_mydll/mydll.dll" ]
+}
 
 action("dispatch_for_proj") {
     arg = [
         "--kernel", rebase_path("//"),
-        "--outpath", rebase_path("//out/ffapi-study"),
+        "--outpath", rebase_path("//out/ffapi_study"),
         "--cachepath", rebase_path("$root_out_dir"),
     ]
 

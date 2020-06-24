@@ -154,7 +154,7 @@ def archive_win(kernel_path, build_cache_path, dispatch_path, dispath_cpu):
     make_dir_exist(dest)
     
     cp_files(sour, dest, '*.lib')
-    cp_files(sour, dest, '*.dll')
+    #cp_files(sour, dest, '*.dll')
     cp_files(sour, dest, '*.pdb')
 
 def archive_mac(kernel_path, build_cache_path, dispatch_path, dispath_cpu):
