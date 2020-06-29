@@ -13,7 +13,7 @@
 
 .vs/
 .idea/
-.vscode/settings.json
+#.vscode/
 
 # Build results
 

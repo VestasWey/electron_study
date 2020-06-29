@@ -88,3 +88,6 @@
     
 ffi-napi与c++
 'string'    char*
+
+nodejs和c++同时调试的方法：
+第一种：先启动node调试(即 "type": "node" && "request": "launch")，然后再启动windows附加调试器附加到目标electron进程（即 "type": "cppvsdbg", "request": "attach"）

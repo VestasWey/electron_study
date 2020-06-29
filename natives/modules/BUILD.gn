@@ -1,6 +1,7 @@
 
 import("ffapi-study/ffapi_study.gni")
 shared_library("ffapi_study")
+#loadable_module("ffapi_study")
 {
     sources = ffapi_study_sources
 

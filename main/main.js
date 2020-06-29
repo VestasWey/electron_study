@@ -5,6 +5,8 @@ const path = require('path');
 const bin_dir = path.join(process.cwd(), 'bin')
 const cwd_dir = path.dirname(__dirname)
 
+console.log(require.resolve('electron'));
+
 let study_main_lib
 let fn_set_pchar_callback1
 try {
