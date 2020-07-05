@@ -5,6 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "(lldb) 附加",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceFolder}/node_modules/.bin/electron",
+            "processId": "${command:pickProcess}",
+            "MIMode": "lldb",
+            "sourceFileMap": {
+                "../../modules/": "${workspaceFolder}/natives/modules/"
+            }
+        },
+        {
+            "type": "lldb",
+            "request": "attach",
+            "name": "CodeLLDB Attach",
+            "pid": "${command:pickProcess}",
+            "sourceMap": {
+                "../../modules/": "${workspaceFolder}/natives/modules/"
+            }
+        },
+        {
             "name": "Python: 当前文件",
             "type": "python",
             "request": "launch",

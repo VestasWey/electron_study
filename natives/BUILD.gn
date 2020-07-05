@@ -46,7 +46,7 @@ if (is_official_build) {
 # on yet are accounted for.
 
 group("gn_all") {
-  testonly = true
+  #testonly = true
 
   deps = [
     # Vestas[

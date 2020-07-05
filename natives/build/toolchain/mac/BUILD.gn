@@ -191,9 +191,10 @@ template("mac_toolchain") {
     if (_enable_dsyms) {
       dsym_switch = " -Wcrl,dsym,{{root_out_dir}} "
       if (is_mac) {
-        dsym_switch += "-Wcrl,dsymutilpath," +
-                       rebase_path("//tools/clang/dsymutil/bin/dsymutil",
-                                   root_build_dir) + " "
+        dsym_switch += "-Wcrl,dsymutilpath," + 
+                       "/Library/Developer/CommandLineTools/usr/bin/dsymutil" + " "
+                       #rebase_path("//tools/clang/dsymutil/bin/dsymutil",
+                       #            root_build_dir) + " "
       }
 
       dsym_output_dir =
