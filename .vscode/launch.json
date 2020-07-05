@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "(Windows) 附加",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        },
+
+        {
             "name": "(lldb) 附加",
             "type": "cppdbg",
             "request": "attach",
